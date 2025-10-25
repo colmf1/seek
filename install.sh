@@ -49,10 +49,28 @@ mkdir -p "$CONFIG_DIR"
 mkdir -p "$CONFIG_DIR/responses"
 
 if [ ! -f "$CONFIG_DIR/.env" ]; then
-    cp .env.example "$CONFIG_DIR/.env"
     echo ""
-    echo "Please edit $CONFIG_DIR/.env and add your DEEPSEEK_API_KEY"
+    echo "=== API Key Setup ==="
+    while true; do
+        read -sp "Enter your DEEPSEEK_API_KEY: " api_key
+        echo ""
+        
+        if [ -z "$api_key" ]; then
+            read -p "Skip API key setup? (y/n): " skip
+            if [[ $skip == "y" ]]; then
+                echo "DEEPSEEK_API_KEY=" > "$CONFIG_DIR/.env"
+                echo "⚠️  Edit $CONFIG_DIR/.env later to add your key."
+                break
+            fi
+        else
+            echo "DEEPSEEK_API_KEY=$api_key" > "$CONFIG_DIR/.env"
+            chmod 600 "$CONFIG_DIR/.env"  # Make it readable only by user
+            echo "✓ API key saved securely!"
+            break
+        fi
+    done
 fi
+
 
 echo ""
 echo "✓ Installation complete!"
