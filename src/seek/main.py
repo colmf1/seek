@@ -54,7 +54,7 @@ def main():
         with open(output_file, "w") as f:
             f.write(f"# Question\n\n{question}\n\n# Response\n\n{response}")
 
-        subprocess.run(["nvim", output_file])
+        subprocess.run(["kitty", "nvim", output_file])
     except Exception as e:
         print(f"Error: {e}")
 
