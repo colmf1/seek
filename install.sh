@@ -50,30 +50,65 @@ mkdir -p "$CONFIG_DIR/responses"
 
 if [ ! -f "$CONFIG_DIR/.env" ]; then
     echo ""
+    echo "=== API Provider Setup ==="
+    echo "Select your AI provider:"
+    echo "1) DeepSeek"
+    echo "2) OpenAI"
+    echo "3) Anthropic"
+    
+    while true; do
+        read -p "Enter choice (1-3): " provider_choice
+        
+        case $provider_choice in
+            1)
+                PROVIDER="deepseek"
+                API_KEY_NAME="DEEPSEEK_API_KEY"
+                break
+                ;;
+            2)
+                PROVIDER="openai"
+                API_KEY_NAME="OPENAI_API_KEY"
+                break
+                ;;
+            3)
+                PROVIDER="anthropic"
+                API_KEY_NAME="ANTHROPIC_API_KEY"
+                break
+                ;;
+            *)
+                echo "Invalid choice. Please enter 1-3."
+                ;;
+        esac
+    done
+    
+    echo ""
     echo "=== API Key Setup ==="
     while true; do
-        read -sp "Enter your DEEPSEEK_API_KEY: " api_key
+        read -sp "Enter your $API_KEY_NAME: " api_key
         echo ""
         
         if [ -z "$api_key" ]; then
             read -p "Skip API key setup? (y/n): " skip
             if [[ $skip == "y" ]]; then
-                echo "DEEPSEEK_API_KEY=" > "$CONFIG_DIR/.env"
+                echo "AI_PROVIDER=$PROVIDER" > "$CONFIG_DIR/.env"
+                echo "AI_API_KEY" >> "$CONFIG_DIR/.env"
                 echo "⚠️  Edit $CONFIG_DIR/.env later to add your key."
                 break
             fi
         else
-            echo "DEEPSEEK_API_KEY=$api_key" > "$CONFIG_DIR/.env"
-            chmod 600 "$CONFIG_DIR/.env"  # Make it readable only by user
-            echo "✓ API key saved securely!"
+            echo "AI_PROVIDER=$PROVIDER" > "$CONFIG_DIR/.env"
+            echo "$API_KEY_NAME=$api_key" >> "$CONFIG_DIR/.env"
+            chmod 600 "$CONFIG_DIR/.env"  
+            echo "✓ Provider and API key saved securely!"
             break
         fi
     done
 fi
-
 
 echo ""
 echo "✓ Installation complete!"
 echo ""
 echo "Add to ~/.config/hypr/hyprland.conf:"
 echo "  bind = SUPER, S, exec, seek"
+
+

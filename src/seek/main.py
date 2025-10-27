@@ -2,6 +2,7 @@ import subprocess
 import os
 from datetime import datetime
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 from dotenv import load_dotenv
 import re
 
@@ -35,12 +36,25 @@ def main():
         "The title will be used as a filename, so ensure it exists and is in suitable format.\n\n"
     ) + question
 
-    llm = ChatOpenAI(
-        model="deepseek-chat",
-        temperature=0.5,
-        base_url="https://api.deepseek.com",
-        api_key=os.getenv("DEEPSEEK_API_KEY"),
-    )
+    provider = os.getenv("PROVIDER")
+    api_key = os.getenv("AI_API_KEY")
+    
+    if provider == "anthropic":
+        llm = ChatAnthropic(
+            model = "claude-sonnet-4-5-20250929",
+            api_key=api_key
+        )
+    elif provider == "deepseek":
+        llm = ChatOpenAI(
+            model = 'deepseek-chat',
+            api_key=api_key,
+            base_url='https://api.deepseek.com'
+        )
+    else:
+        llm = ChatOpenAI(
+            model="gpt-4",
+            api_key=api_key
+        )
 
     try:
         response = llm.invoke(prompt).content
