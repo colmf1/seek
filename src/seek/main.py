@@ -5,8 +5,15 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from dotenv import load_dotenv
 import re
+import logging
 
 def main():
+    logging.basicConfig(
+        filename='app.log',
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+
     config_dir = os.path.expanduser("~/.config/seek")
     env_path = os.path.join(config_dir, ".env")
     output_dir = os.path.join(config_dir, 'responses')
@@ -27,13 +34,15 @@ def main():
     exit() if result.returncode != 0 else None
     question = result.stdout.strip()
     timestamp = datetime.now().strftime("%Y%m%d%H%M")
+    logging.info(f'User Input \n{question}')
 
     prompt = (
         "You are a helpful assistant."
         "Keep answers short, clear, and in markdown format."
         "This is intended as a one off, so give as much background information as posible while maintaining length of response"
         "At the top of every response, include a specific 2 word title separated by an underscore _ inside '{}'"
-        "The title will be used as a filename, so ensure it exists and is in suitable format.\n\n"
+        "The title will be used as a filename, so ensure it exists and is in suitable format."
+        "There can be no spaces in the title under any circumstances."
     ) + question
 
     provider = os.getenv("AI_PROVIDER")
@@ -58,6 +67,8 @@ def main():
 
     try:
         response = llm.invoke(prompt).content
+
+        logging.info(f'response \n{response}')
         match = re.search(pattern=r"\{([^{}]+)\}", string=response)
         if match:
             title = match.group(1)
@@ -65,10 +76,12 @@ def main():
         else:
             output_file = os.path.join(output_dir, f"{timestamp}.md")
 
+        logging.info(f'Output Filenamme \n{output_file}')
+
         with open(output_file, "w") as f:
             f.write(f"# Question\n\n{question}\n\n# Response\n\n{response}")
-
         subprocess.run(["kitty", "nvim", output_file])
+        
     except Exception as e:
         print(f"Error: {e}")
 

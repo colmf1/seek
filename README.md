@@ -47,6 +47,6 @@ Press `SUPER + S` to launch!
 
 ## Uninstall
 ```bash
-uv tool uninstall your-app
-rm -rf ~/.config/your-app
+uv tool uninstall seek
+rm -rf ~/.config/seek
 ```
