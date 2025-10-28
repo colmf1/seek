@@ -36,7 +36,7 @@ def main():
         "The title will be used as a filename, so ensure it exists and is in suitable format.\n\n"
     ) + question
 
-    provider = os.getenv("PROVIDER")
+    provider = os.getenv("AI_PROVIDER")
     api_key = os.getenv("AI_API_KEY")
     
     if provider == "anthropic":

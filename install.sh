@@ -80,13 +80,13 @@ if [ ! -f "$CONFIG_DIR/.env" ]; then
                 ;;
         esac
     done
-    
+ 
     echo ""
     echo "=== API Key Setup ==="
     while true; do
         read -sp "Enter your $API_KEY_NAME: " api_key
         echo ""
-        
+
         if [ -z "$api_key" ]; then
             read -p "Skip API key setup? (y/n): " skip
             if [[ $skip == "y" ]]; then
