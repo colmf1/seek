@@ -5,49 +5,46 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from dotenv import load_dotenv
 import re
-import logging
+import argparse
 
+
+#!/usr/bin/env python3
+"""
+Seek - A command-line AI assistant tool
+Usage:
+    seek -sp filename.txt
+    seek -q "Your question here" --system_prompt custom.txt
+"""
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Process a question for the AI model.")
+    parser.add_argument('-sp', type=str, metavar="FILE", help='The system prompt to guide the AI model.', default="~/.config/seek/system_prompt.txt")
+    parser.add_argument("-q", type=str, help="The question to be processed by the AI model.")
+    return parser.parse_args()
 
 def main():
-    logging.basicConfig(
-        filename="app.log",
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-    )
+    args = parse_args()
+    question = args.q
+    filepath = args.sp
+
+    question = args.question
+    system_prompt = filepath.read_text().strip()
 
     config_dir = os.path.expanduser("~/.config/seek")
     env_path = os.path.join(config_dir, ".env")
     output_dir = os.path.join(config_dir, "responses")
+
     load_dotenv(env_path)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    result = subprocess.run(
-        [
-            "zenity",
-            "--entry",
-            "--title=Ask a Question",
-            "--text=What is your question?",
-            "--width=800",
-            "--height=200",
-        ],
-        capture_output=True,
-        text=True,
-    )
-    exit() if result.returncode != 0 else None
-    question = result.stdout.strip()
-    timestamp = datetime.now().strftime("%Y%m%d%H%M")
-    logging.info(f"User Input \n{question}")
-
-    prompt = (
-        "You are a helpful assistant."
-        "Keep answers short, clear, and in markdown format."
-        "This is intended as a one off, so give as much background information as posible while maintaining length of response"
-        "At the top of every response, include a specific 2 word title separated by an underscore _ inside '{}'"
-        "The title will be used as a filename, so ensure it exists and is in suitable format."
-        "There can be no spaces in the title under any circumstances."
-    ) + question
-
-    provider = os.getenv("AI_PROVIDER")
-    api_key = os.getenv("AI_API_KEY")
+    prompt = system_prompt + question
+    
+    try:
+        provider = os.getenv("AI_PROVIDER")
+        api_key = os.getenv("AI_API_KEY")
+    except Exception as e:
+        print(f"No Provider or API Key found")
+        return 1
 
     if provider == "anthropic":
         llm = ChatAnthropic(model="claude-sonnet-4-5-20250929", api_key=api_key)
@@ -57,27 +54,22 @@ def main():
         )
     else:
         llm = ChatOpenAI(model="gpt-4", api_key=api_key)
-
     try:
         response = llm.invoke(prompt).content
-
-        logging.info(f"response \n{response}")
         match = re.search(pattern=r"\{([^{}]+)\}", string=response)
         if match:
             title = match.group(1)
             output_file = os.path.join(output_dir, f"{title}.md")
         else:
             output_file = os.path.join(output_dir, f"{timestamp}.md")
-
-        logging.info(f"Output Filenamme \n{output_file}")
-
+        os.makedirs(output_dir, exist_ok=True)
         with open(output_file, "w") as f:
-            f.write(f"# Question\n\n{question}\n\n# Response\n\n{response}")
-        subprocess.run(["kitty", "nvim", output_file])
-
+            f.write(response)
+        print(f"{output_file}")
     except Exception as e:
         print(f"Error: {e}")
-
+        return 1 
+    return 0
 
 if __name__ == "__main__":
     main()

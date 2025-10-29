@@ -12,6 +12,15 @@ Currently the nvim output isn't opening correctly
 - Should be fixed by shell script 
 
 - Seek set changes provider
-- Seek install runs install script
-- Seek uninstall removes install script 
+- Seek uninstall removes install script  - bash not python
 
+- In two minds - should I have python handle everything or do half it in bash 
+- I think bash is better
+
+
+I think this whole thing was a mistake and I should have done it in python from the start
+The reason I want it to be bash is so it works with different shells 
+- but python can do that too with os.environ
+How? 
+- use os.environ to get shell type
+- then use subprocess to run the correct commands for that shell:
