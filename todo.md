@@ -24,3 +24,6 @@ The reason I want it to be bash is so it works with different shells
 How? 
 - use os.environ to get shell type
 - then use subprocess to run the correct commands for that shell:
+
+
+
